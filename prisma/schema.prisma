@@ -1,0 +1,266 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Role {
+  CUSTOMER
+  RESTAURANT_OWNER
+  DELIVERY_RIDER
+  SUPER_ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  DIGITAL_WALLET
+  CREDIT_CARD
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String    
+  password    String
+  phone       String?
+  role        Role      @default(CUSTOMER)
+  isActive    Boolean   @default(true)
+  isDeleted   Boolean   @default(false) // Soft Delete
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  restaurants Restaurant[]
+  orders      Order[]
+  reviews     Review[]
+  cart        Cart?
+
+  @@index([email])
+  @@map("users")
+}
+
+model Restaurant {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  ownerId     String    @db.ObjectId
+  imageUrl    String?
+  address     String
+  location    Json      // Stores coordinates: { type: "Point", coordinates: [lng, lat] }
+  rating      Float     @default(0.0)
+  isFeatured  Boolean   @default(false)
+  isOpen      Boolean   @default(true)
+  isDeleted   Boolean   @default(false) // Soft Delete
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categories  Category[]
+  foods       Food[]
+  orders      Order[]
+  reviews     Review[]
+
+  @@index([ownerId])
+  @@index([isFeatured, isOpen])
+  @@map("restaurants")
+}
+
+model Category {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  restaurantId String     @db.ObjectId
+  isDeleted    Boolean    @default(false) // Soft Delete
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  foods        Food[]
+
+  @@unique([name, restaurantId]) // One restaurant can't have duplicate categories
+  @@index([restaurantId])
+  @@map("categories")
+}
+
+model Food {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  price        Float
+  imageUrl     String?
+  isAvailable  Boolean     @default(true)
+  restaurantId String      @db.ObjectId
+  categoryId   String      @db.ObjectId
+  isDeleted    Boolean     @default(false) // Soft Delete
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  @@index([restaurantId])
+  @@index([categoryId])
+  @@map("foods")
+}
+
+model Cart {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String     @unique @db.ObjectId
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  foodId    String   @db.ObjectId
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model Order {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  restaurantId  String        @db.ObjectId
+  couponId      String?       @db.ObjectId
+  totalAmount   Float
+  discount      Float         @default(0.0)
+  deliveryFee   Float         @default(0.0)
+  payableAmount Float
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  deliveryAddress String
+  isDeleted     Boolean       @default(false) // Soft Delete
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  coupon        Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+
+  @@index([userId])
+  @@index([restaurantId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  foodId    String   @db.ObjectId
+  quantity  Int
+  price     Float    // Captured at the time of order to prevent historical issues
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Coupon {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  code       String    @unique
+  discount   Float     // Percentage or Fixed amount
+  isPercent  Boolean   @default(true)
+  maxDiscount Float?
+  expiryDate DateTime
+  isActive   Boolean   @default(true)
+  isDeleted  Boolean   @default(false) // Soft Delete
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  orders     Order[]
+
+  // @@index([code])
+  @@map("coupons")
+}
+
+model Review {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String     @db.ObjectId
+  restaurantId String     @db.ObjectId
+  rating       Int        // 1 to 5
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@map("reviews")
+}
+
+model Banner {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  imageUrl    String
+  redirectUrl String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("banners")
+}
