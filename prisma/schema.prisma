@@ -5,262 +5,431 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
-
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 
-// ==========================================
-// ENUMS
-// ==========================================
-
-enum Role {
+enum UserRole {
   CUSTOMER
+  ADMIN
   RESTAURANT_OWNER
-  DELIVERY_RIDER
-  SUPER_ADMIN
+  DELIVERY
 }
 
 enum OrderStatus {
   PENDING
-  CONFIRMED
+  ACCEPTED
   PREPARING
-  READY_FOR_PICKUP
-  OUT_FOR_DELIVERY
+  READY
   DELIVERED
   CANCELLED
 }
 
-enum PaymentStatus {
-  PENDING
-  SUCCESSFUL
-  FAILED
-  REFUNDED
-}
-
 enum PaymentMethod {
-  CASH_ON_DELIVERY
-  DIGITAL_WALLET
-  CREDIT_CARD
+  CASH
+  CARD
+  WALLET
+  ONLINE
 }
 
-// ==========================================
-// MODELS
-// ==========================================
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
 
 model User {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String    
-  password    String
-  phone       String?
-  role        Role      @default(CUSTOMER)
-  isActive    Boolean   @default(true)
-  isDeleted   Boolean   @default(false) // Soft Delete
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  firstName       String
+  lastName        String?
+  email           String    @unique
+  phone           String?   @unique
+  password        String
+  role            UserRole  @default(CUSTOMER)
+  avatarUrl       String?
+  isEmailVerified Boolean   @default(false)
+  lastLoginAt     DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     String?
+  updatedById     String?
+  deletedById     String?
 
-  // Relations
-  restaurants Restaurant[]
-  orders      Order[]
-  reviews     Review[]
-  cart        Cart?
+  addresses               Address[]
+  cart                    Cart?
+  orders                  Order[]
+  reviews                 Review[]
+  wishlists               Wishlist[]
+  createdRestaurants      Restaurant[]   @relation("RestaurantOwner")
+  couponsCreated          Coupon[]       @relation("CouponCreator")
+  createdBy               User?          @relation("UserCreatedBy", fields: [createdById], references: [id])
+  updatedBy               User?          @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy               User?          @relation("UserDeletedBy", fields: [deletedById], references: [id])
+  createdUsers            User[]         @relation("UserCreatedBy")
+  updatedUsers            User[]         @relation("UserUpdatedBy")
+  deletedUsers            User[]         @relation("UserDeletedBy")
+  createdRestaurantAudits Restaurant[]   @relation("RestaurantCreatedBy")
+  updatedRestaurants      Restaurant[]   @relation("RestaurantUpdatedBy")
+  deletedRestaurants      Restaurant[]   @relation("RestaurantDeletedBy")
+  createdCategories       Category[]     @relation("CategoryCreatedBy")
+  updatedCategories       Category[]     @relation("CategoryUpdatedBy")
+  deletedCategories       Category[]     @relation("CategoryDeletedBy")
+  createdFoods            Food[]         @relation("FoodCreatedBy")
+  updatedFoods            Food[]         @relation("FoodUpdatedBy")
+  deletedFoods            Food[]         @relation("FoodDeletedBy")
+  createdAddresses        Address[]      @relation("AddressCreatedBy")
+  updatedAddresses        Address[]      @relation("AddressUpdatedBy")
+  deletedAddresses        Address[]      @relation("AddressDeletedBy")
+  createdOrders           Order[]        @relation("OrderCreatedBy")
+  updatedOrders           Order[]        @relation("OrderUpdatedBy")
+  deletedOrders           Order[]        @relation("OrderDeletedBy")
+  orderHistories          OrderHistory[] @relation("OrderHistoryChangedBy")
+  updatedCoupons          Coupon[]       @relation("CouponUpdatedBy")
+  deletedCoupons          Coupon[]       @relation("CouponDeletedBy")
 
   @@index([email])
-  @@map("users")
+  @@index([phone])
 }
 
 model Restaurant {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(uuid())
+  ownerId     String
   name        String
   description String?
-  ownerId     String    @db.ObjectId
-  imageUrl    String?
-  address     String
-  location    Json      // Stores coordinates: { type: "Point", coordinates: [lng, lat] }
-  rating      Float     @default(0.0)
-  isFeatured  Boolean   @default(false)
-  isOpen      Boolean   @default(true)
-  isDeleted   Boolean   @default(false) // Soft Delete
+  phone       String?
+  email       String?   @unique
+  website     String?
+  logoUrl     String?
+  coverUrl    String?
+  cuisineType String?   @db.VarChar(128)
+  rating      Float     @default(0)
+  isOpen      Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  addressId   String?
+  deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  createdById String?
+  updatedById String?
+  deletedById String?
 
-  // Relations
-  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  categories  Category[]
-  foods       Food[]
-  orders      Order[]
-  reviews     Review[]
+  owner      User       @relation("RestaurantOwner", fields: [ownerId], references: [id])
+  address    Address?   @relation("RestaurantPrimaryAddress", fields: [addressId], references: [id])
+  addresses  Address[]  @relation("RestaurantAddresses")
+  categories Category[]
+  foods      Food[]
+  orders     Order[]
+  reviews    Review[]
+  banners    Banner[]
+  coupons    Coupon[]
+  createdBy  User?      @relation("RestaurantCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?      @relation("RestaurantUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy  User?      @relation("RestaurantDeletedBy", fields: [deletedById], references: [id])
 
   @@index([ownerId])
-  @@index([isFeatured, isOpen])
-  @@map("restaurants")
+  @@index([addressId])
+  @@index([email])
+  @@index([isActive])
 }
 
 model Category {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(uuid())
+  restaurantId String
   name         String
-  restaurantId String     @db.ObjectId
-  isDeleted    Boolean    @default(false) // Soft Delete
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  description  String?
+  sortOrder    Int       @default(0)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdById  String?
+  updatedById  String?
+  deletedById  String?
 
-  // Relations
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  foods        Food[]
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  foods      Food[]
+  createdBy  User?      @relation("CategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?      @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy  User?      @relation("CategoryDeletedBy", fields: [deletedById], references: [id])
 
-  @@unique([name, restaurantId]) // One restaurant can't have duplicate categories
+  @@unique([restaurantId, name])
   @@index([restaurantId])
-  @@map("categories")
 }
 
 model Food {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  description  String?
-  price        Float
-  imageUrl     String?
-  isAvailable  Boolean     @default(true)
-  restaurantId String      @db.ObjectId
-  categoryId   String      @db.ObjectId
-  isDeleted    Boolean     @default(false) // Soft Delete
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id              String    @id @default(uuid())
+  restaurantId    String
+  categoryId      String?
+  name            String
+  description     String?
+  imageUrl        String?
+  price           Decimal   @db.Decimal(10, 2)
+  isAvailable     Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
+  calories        Int?
+  preparationTime Int?
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     String?
+  updatedById     String?
+  deletedById     String?
 
-  // Relations
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  cartItems    CartItem[]
-  orderItems   OrderItem[]
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
+  category   Category?   @relation(fields: [categoryId], references: [id])
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  wishlists  Wishlist[]
+  createdBy  User?       @relation("FoodCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?       @relation("FoodUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy  User?       @relation("FoodDeletedBy", fields: [deletedById], references: [id])
 
   @@index([restaurantId])
   @@index([categoryId])
-  @@map("foods")
+  @@index([name])
+  @@index([isAvailable])
 }
 
-model Cart {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String     @unique @db.ObjectId
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+model Address {
+  id           String    @id @default(uuid())
+  userId       String?
+  restaurantId String?
+  label        String?
+  line1        String
+  line2        String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  latitude     Decimal?  @db.Decimal(10, 7)
+  longitude    Decimal?  @db.Decimal(10, 7)
+  isDefault    Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdById  String?
+  updatedById  String?
+  deletedById  String?
 
-  // Relations
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items      CartItem[]
-
-  @@map("carts")
-}
-
-model CartItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  cartId    String   @db.ObjectId
-  foodId    String   @db.ObjectId
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
-
-  @@index([cartId])
-  @@map("cart_items")
-}
-
-model Order {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String        @db.ObjectId
-  restaurantId  String        @db.ObjectId
-  couponId      String?       @db.ObjectId
-  totalAmount   Float
-  discount      Float         @default(0.0)
-  deliveryFee   Float         @default(0.0)
-  payableAmount Float
-  status        OrderStatus   @default(PENDING)
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentMethod PaymentMethod
-  deliveryAddress String
-  isDeleted     Boolean       @default(false) // Soft Delete
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  // Relations
-  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
-  coupon        Coupon?       @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
+  user                  User?        @relation(fields: [userId], references: [id])
+  restaurant            Restaurant?  @relation("RestaurantAddresses", fields: [restaurantId], references: [id])
+  primaryForRestaurants Restaurant[] @relation("RestaurantPrimaryAddress")
+  orders                Order[]
+  createdBy             User?        @relation("AddressCreatedBy", fields: [createdById], references: [id])
+  updatedBy             User?        @relation("AddressUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy             User?        @relation("AddressDeletedBy", fields: [deletedById], references: [id])
 
   @@index([userId])
   @@index([restaurantId])
-  @@index([status])
-  @@map("orders")
+  @@index([postalCode])
 }
 
-model OrderItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String   @db.ObjectId
-  foodId    String   @db.ObjectId
-  quantity  Int
-  price     Float    // Captured at the time of order to prevent historical issues
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  food      Food     @relation(fields: [foodId], references: [id], onDelete: Restrict)
-
-  @@index([orderId])
-  @@map("order_items")
-}
-
-model Coupon {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  code       String    @unique
-  discount   Float     // Percentage or Fixed amount
-  isPercent  Boolean   @default(true)
-  maxDiscount Float?
-  expiryDate DateTime
-  isActive   Boolean   @default(true)
-  isDeleted  Boolean   @default(false) // Soft Delete
+model Cart {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  totalItems Int       @default(0)
+  subTotal   Decimal   @default("0.00") @db.Decimal(10, 2)
+  deletedAt  DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  // Relations
-  orders     Order[]
+  user  User       @relation(fields: [userId], references: [id])
+  items CartItem[]
 
-  // @@index([code])
-  @@map("coupons")
+  @@index([userId])
+}
+
+model CartItem {
+  id         String    @id @default(uuid())
+  cartId     String
+  foodId     String
+  quantity   Int       @default(1)
+  unitPrice  Decimal   @db.Decimal(10, 2)
+  totalPrice Decimal   @db.Decimal(10, 2)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  cart Cart @relation(fields: [cartId], references: [id])
+  food Food @relation(fields: [foodId], references: [id])
+
+  @@index([cartId])
+  @@index([foodId])
+}
+
+model Order {
+  id             String        @id @default(uuid())
+  userId         String
+  restaurantId   String
+  addressId      String
+  couponId       String?
+  orderStatus    OrderStatus   @default(PENDING)
+  paymentMethod  PaymentMethod @default(ONLINE)
+  subTotal       Decimal       @db.Decimal(10, 2)
+  deliveryFee    Decimal       @default("0.00") @db.Decimal(10, 2)
+  taxAmount      Decimal       @default("0.00") @db.Decimal(10, 2)
+  discountAmount Decimal       @default("0.00") @db.Decimal(10, 2)
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  tipAmount      Decimal       @default("0.00") @db.Decimal(10, 2)
+  instructions   String?
+  placedAt       DateTime      @default(now())
+  deliveredAt    DateTime?
+  canceledAt     DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  createdById    String?
+  updatedById    String?
+  deletedById    String?
+
+  user       User           @relation(fields: [userId], references: [id])
+  restaurant Restaurant     @relation(fields: [restaurantId], references: [id])
+  address    Address        @relation(fields: [addressId], references: [id])
+  coupon     Coupon?        @relation(fields: [couponId], references: [id])
+  items      OrderItem[]
+  history    OrderHistory[]
+  reviews    Review[]
+  createdBy  User?          @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User?          @relation("OrderUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy  User?          @relation("OrderDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([userId])
+  @@index([restaurantId])
+  @@index([addressId])
+  @@index([orderStatus])
+  @@index([placedAt])
+}
+
+model OrderHistory {
+  id             String       @id @default(uuid())
+  orderId        String
+  previousStatus OrderStatus?
+  currentStatus  OrderStatus
+  note           String?
+  changedById    String?
+  createdAt      DateTime     @default(now())
+
+  order     Order @relation(fields: [orderId], references: [id])
+  changedBy User? @relation("OrderHistoryChangedBy", fields: [changedById], references: [id])
+
+  @@index([orderId])
+  @@index([changedById])
+  @@index([currentStatus])
+}
+
+model OrderItem {
+  id         String    @id @default(uuid())
+  orderId    String
+  foodId     String
+  quantity   Int       @default(1)
+  unitPrice  Decimal   @db.Decimal(10, 2)
+  totalPrice Decimal   @db.Decimal(10, 2)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+  food  Food  @relation(fields: [foodId], references: [id])
+
+  @@index([orderId])
+  @@index([foodId])
+}
+
+model Coupon {
+  id            String     @id @default(uuid())
+  code          String     @unique
+  description   String?
+  type          CouponType @default(PERCENTAGE)
+  discountValue Decimal    @db.Decimal(10, 2)
+  minOrderValue Decimal    @default("0.00") @db.Decimal(10, 2)
+  maxDiscount   Decimal?   @db.Decimal(10, 2)
+  validFrom     DateTime
+  validUntil    DateTime
+  usageLimit    Int?
+  usedCount     Int        @default(0)
+  restaurantId  String?
+  isActive      Boolean    @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  createdById   String?
+  updatedById   String?
+  deletedById   String?
+
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
+  orders     Order[]
+  creator    User?       @relation("CouponCreator", fields: [createdById], references: [id])
+  updatedBy  User?       @relation("CouponUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy  User?       @relation("CouponDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([restaurantId])
+  @@index([code])
+  @@index([validFrom, validUntil])
 }
 
 model Review {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String     @db.ObjectId
-  restaurantId String     @db.ObjectId
-  rating       Int        // 1 to 5
+  id           String    @id @default(uuid())
+  userId       String
+  orderId      String
+  restaurantId String?
+  foodId       String?
+  rating       Int       @default(5)
+  title        String?
   comment      String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  isVerified   Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  // Relations
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id])
+  order      Order       @relation(fields: [orderId], references: [id])
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
+  food       Food?       @relation(fields: [foodId], references: [id])
 
+  @@index([userId])
+  @@index([orderId])
   @@index([restaurantId])
-  @@map("reviews")
+  @@index([foodId])
+  @@index([rating])
 }
 
 model Banner {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  imageUrl    String
-  redirectUrl String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(uuid())
+  restaurantId  String?
+  title         String
+  subtitle      String?
+  imageUrl      String
+  imagePublicId String?
+  actionUrl     String?
+  priority      Int       @default(0)
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  @@map("banners")
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
+
+  @@index([restaurantId])
+  @@index([isActive])
+  @@index([priority])
+}
+
+model Wishlist {
+  id        String    @id @default(uuid())
+  userId    String
+  foodId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  food Food @relation(fields: [foodId], references: [id])
+
+  @@unique([userId, foodId])
+  @@index([userId])
+  @@index([foodId])
 }

@@ -1,23 +1,22 @@
+
 import { Router } from 'express';
-import { handleRegister, handleLogin, handleRefresh, handleLogout } from './auth.controller';
-import { validate, protect, restrictTo } from './auth.middleware';
-import { registerSchema, loginSchema } from './auth.validation';
+import { AuthController } from './auth.controller';
+import { authenticate } from './auth.middlewares';
+import { authValidators } from './auth.validators';
+import { authorize } from './rbac.middleware';
+import { validateRequest } from '../../middlewares/requestValidator';
+import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
-// Public Routes
-router.post('/register', validate(registerSchema), handleRegister);
-router.post('/login', validate(loginSchema), handleLogin);
-router.post('/refresh', handleRefresh);
-router.post('/logout', handleLogout);
+router.post('/register', validateRequest(authValidators.registerSchema), asyncHandler(AuthController.register));
+router.post('/login', validateRequest(authValidators.loginSchema), asyncHandler(AuthController.login));
+router.post('/logout', authenticate, asyncHandler(AuthController.logout));
+router.post('/refresh', asyncHandler(AuthController.refreshToken));
+router.post('/forgot-password', validateRequest(authValidators.forgotPasswordSchema), asyncHandler(AuthController.forgotPassword));
+router.post('/reset-password', validateRequest(authValidators.resetPasswordSchema), asyncHandler(AuthController.resetPassword));
 
-// Example of Protected & Role-Based Routes
-router.get('/admin-dashboard', protect, restrictTo('SUPER_ADMIN'), (req, res) => {
-  res.status(200).json({ message: 'Welcome to Admin Panel' });
-});
+// Example RBAC protected route
+router.get('/me', authenticate, authorize(['ADMIN', 'RESTAURANT', 'CUSTOMER']), asyncHandler(AuthController.getProfile));
 
-router.get('/restaurant/orders', protect, restrictTo('RESTAURANT_OWNER', 'SUPER_ADMIN'), (req, res) => {
-  res.status(200).json({ message: 'Active Orders for your Restaurant' });
-});
-
-export default router;
+export const AuthRoutes = router;
