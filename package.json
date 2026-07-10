@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Production-ready Express.js backend for food delivery application",
   "main": "dist/index.js",
-  
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
+    "vercel-build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -55,9 +55,9 @@
     "@types/morgan": "1.9.5",
     "@types/node": "^20.19.43",
     "@types/pg": "^8.20.0",
-    "@typescript-eslint/eslint-plugin": "6.0.0",
-    "@typescript-eslint/parser": "6.0.0",
-    "eslint": "8.43.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
     "prettier": "3.0.0",
     "ts-node": "10.9.1",
     "typescript": "^6.0.3"

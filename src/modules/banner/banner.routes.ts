@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { validateRequest } from '../../middlewares/requestValidator';
 import { asyncHandler } from '../../utils/asyncHandler';
@@ -11,27 +10,27 @@ import { bannerValidators } from './banner.validators';
 const router = Router();
 
 router.post(
-    '/',
-    authenticate,
-    authorize(bannerPermissions.createBanner),
-    validateRequest(bannerValidators.createBannerSchema),
-    asyncHandler(BannerController.createBanner),
+  '/',
+  authenticate,
+  authorize(bannerPermissions.createBanner),
+  validateRequest(bannerValidators.createBannerSchema),
+  asyncHandler(BannerController.createBanner)
 );
 
 router.put(
-    '/:id',
-    authenticate,
-    authorize(bannerPermissions.updateBanner),
-    validateRequest(bannerValidators.updateBannerSchema),
-    asyncHandler(BannerController.updateBanner),
+  '/:id',
+  authenticate,
+  authorize(bannerPermissions.updateBanner),
+  validateRequest(bannerValidators.updateBannerSchema),
+  asyncHandler(BannerController.updateBanner)
 );
 
 router.delete(
-    '/:id',
-    authenticate,
-    authorize(bannerPermissions.deleteBanner),
-    validateRequest(bannerValidators.deleteBannerSchema),
-    asyncHandler(BannerController.deleteBanner),
+  '/:id',
+  authenticate,
+  authorize(bannerPermissions.deleteBanner),
+  validateRequest(bannerValidators.deleteBannerSchema),
+  asyncHandler(BannerController.deleteBanner)
 );
 
-export const bannerRoutes = router
+export const bannerRoutes = router;

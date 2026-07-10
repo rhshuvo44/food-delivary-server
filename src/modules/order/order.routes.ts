@@ -10,59 +10,59 @@ import { orderValidators } from './order.validators';
 const router = Router();
 
 router.post(
-    '/',
-    authenticate,
-    authorize(orderPermissions.createOrder),
-    validateRequest(orderValidators.createOrderSchema),
-    asyncHandler(OrderController.createOrder),
+  '/',
+  authenticate,
+  authorize(orderPermissions.createOrder),
+  validateRequest(orderValidators.createOrderSchema),
+  asyncHandler(OrderController.createOrder)
 );
 
 router.get(
-    '/',
-    authenticate,
-    authorize(orderPermissions.getOrders),
-    validateRequest(orderValidators.getOrdersSchema),
-    asyncHandler(OrderController.getOrders),
+  '/',
+  authenticate,
+  authorize(orderPermissions.getOrders),
+  validateRequest(orderValidators.getOrdersSchema),
+  asyncHandler(OrderController.getOrders)
 );
 
 router.get(
-    '/:id',
-    authenticate,
-    authorize(orderPermissions.getOrder),
-    validateRequest(orderValidators.orderIdParamsSchema),
-    asyncHandler(OrderController.getOrder),
+  '/:id',
+  authenticate,
+  authorize(orderPermissions.getOrder),
+  validateRequest(orderValidators.orderIdParamsSchema),
+  asyncHandler(OrderController.getOrder)
 );
 
 router.get(
-    '/:id/history',
-    authenticate,
-    authorize(orderPermissions.getOrderHistory),
-    validateRequest(orderValidators.orderIdParamsSchema),
-    asyncHandler(OrderController.getOrderHistory),
+  '/:id/history',
+  authenticate,
+  authorize(orderPermissions.getOrderHistory),
+  validateRequest(orderValidators.orderIdParamsSchema),
+  asyncHandler(OrderController.getOrderHistory)
 );
 
 router.put(
-    '/:id',
-    authenticate,
-    authorize(orderPermissions.updateOrder),
-    validateRequest(orderValidators.updateOrderSchema),
-    asyncHandler(OrderController.updateOrder),
+  '/:id',
+  authenticate,
+  authorize(orderPermissions.updateOrder),
+  validateRequest(orderValidators.updateOrderSchema),
+  asyncHandler(OrderController.updateOrder)
 );
 
 router.patch(
-    '/:id/status',
-    authenticate,
-    authorize(orderPermissions.updateOrderStatus),
-    validateRequest(orderValidators.updateOrderStatusSchema),
-    asyncHandler(OrderController.updateOrderStatus),
+  '/:id/status',
+  authenticate,
+  authorize(orderPermissions.updateOrderStatus),
+  validateRequest(orderValidators.updateOrderStatusSchema),
+  asyncHandler(OrderController.updateOrderStatus)
 );
 
 router.delete(
-    '/:id',
-    authenticate,
-    authorize(orderPermissions.deleteOrder),
-    validateRequest(orderValidators.orderIdParamsSchema),
-    asyncHandler(OrderController.deleteOrder),
+  '/:id',
+  authenticate,
+  authorize(orderPermissions.deleteOrder),
+  validateRequest(orderValidators.orderIdParamsSchema),
+  asyncHandler(OrderController.deleteOrder)
 );
 
-export const orderRoutes = router
+export const orderRoutes = router;

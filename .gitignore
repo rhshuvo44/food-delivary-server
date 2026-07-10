@@ -12,3 +12,5 @@ vercel.json
 /src/generated/prisma
 
 /src/generated/prisma
+
+.env*

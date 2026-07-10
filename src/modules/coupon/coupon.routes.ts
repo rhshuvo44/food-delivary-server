@@ -10,35 +10,35 @@ import { couponValidators } from './coupon.validators';
 const router = Router();
 
 router.post(
-    '/',
-    authenticate,
-    authorize(couponPermissions.createCoupon),
-    validateRequest(couponValidators.createCouponSchema),
-    asyncHandler(CouponController.createCoupon),
+  '/',
+  authenticate,
+  authorize(couponPermissions.createCoupon),
+  validateRequest(couponValidators.createCouponSchema),
+  asyncHandler(CouponController.createCoupon)
 );
 
 router.post(
-    '/apply',
-    authenticate,
-    authorize(couponPermissions.applyCoupon),
-    validateRequest(couponValidators.applyCouponSchema),
-    asyncHandler(CouponController.applyCoupon),
+  '/apply',
+  authenticate,
+  authorize(couponPermissions.applyCoupon),
+  validateRequest(couponValidators.applyCouponSchema),
+  asyncHandler(CouponController.applyCoupon)
 );
 
 router.put(
-    '/:id',
-    authenticate,
-    authorize(couponPermissions.updateCoupon),
-    validateRequest(couponValidators.updateCouponSchema),
-    asyncHandler(CouponController.updateCoupon),
+  '/:id',
+  authenticate,
+  authorize(couponPermissions.updateCoupon),
+  validateRequest(couponValidators.updateCouponSchema),
+  asyncHandler(CouponController.updateCoupon)
 );
 
 router.delete(
-    '/:id',
-    authenticate,
-    authorize(couponPermissions.deleteCoupon),
-    validateRequest(couponValidators.deleteCouponSchema),
-    asyncHandler(CouponController.deleteCoupon),
+  '/:id',
+  authenticate,
+  authorize(couponPermissions.deleteCoupon),
+  validateRequest(couponValidators.deleteCouponSchema),
+  asyncHandler(CouponController.deleteCoupon)
 );
 
-export const couponRoutes = router
+export const couponRoutes = router;

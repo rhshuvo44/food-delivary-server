@@ -10,27 +10,27 @@ import { reviewValidators } from './review.validators';
 const router = Router();
 
 router.post(
-    '/',
-    authenticate,
-    authorize(reviewPermissions.createReview),
-    validateRequest(reviewValidators.createReviewSchema),
-    asyncHandler(ReviewController.createReview),
+  '/',
+  authenticate,
+  authorize(reviewPermissions.createReview),
+  validateRequest(reviewValidators.createReviewSchema),
+  asyncHandler(ReviewController.createReview)
 );
 
 router.put(
-    '/:id',
-    authenticate,
-    authorize(reviewPermissions.updateReview),
-    validateRequest(reviewValidators.updateReviewSchema),
-    asyncHandler(ReviewController.updateReview),
+  '/:id',
+  authenticate,
+  authorize(reviewPermissions.updateReview),
+  validateRequest(reviewValidators.updateReviewSchema),
+  asyncHandler(ReviewController.updateReview)
 );
 
 router.delete(
-    '/:id',
-    authenticate,
-    authorize(reviewPermissions.deleteReview),
-    validateRequest(reviewValidators.deleteReviewSchema),
-    asyncHandler(ReviewController.deleteReview),
+  '/:id',
+  authenticate,
+  authorize(reviewPermissions.deleteReview),
+  validateRequest(reviewValidators.deleteReviewSchema),
+  asyncHandler(ReviewController.deleteReview)
 );
 
-export const reviewRoutes = router
+export const reviewRoutes = router;

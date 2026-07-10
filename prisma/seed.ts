@@ -1,7 +1,17 @@
 // import { OrderStatus, PaymentMethod, PrismaClient } from './prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+import { config } from '../src/config/environment';
+import { OrderStatus, PaymentMethod, PrismaClient } from '../src/generated/prisma/client';
+
+const pool = new Pool({ connectionString: config.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter,
+  log: ['error', 'warn'],
+});
 
 const PASSWORD = 'Password123';
 
@@ -237,8 +247,8 @@ async function cleanSeedData(): Promise<void> {
         select: { id: true },
     });
 
-    const restaurantIds = restaurants.map(restaurant => restaurant.id);
-    const userIds = users.map(user => user.id);
+    const restaurantIds = restaurants.map((restaurant:any) => restaurant.id);
+    const userIds = users.map((user:any) => user.id);
 
     const orderFilters = [
         ...(restaurantIds.length ? [{ restaurantId: { in: restaurantIds } }] : []),
@@ -246,11 +256,11 @@ async function cleanSeedData(): Promise<void> {
     ];
     const orders = orderFilters.length
         ? await prisma.order.findMany({
-              where: { OR: orderFilters },
-              select: { id: true },
-          })
+            where: { OR: orderFilters },
+            select: { id: true },
+        })
         : [];
-    const orderIds = orders.map(order => order.id);
+    const orderIds = orders.map((order:any) => order.id);
 
     if (orderIds.length) {
         await prisma.review.deleteMany({ where: { orderId: { in: orderIds } } });
@@ -353,7 +363,7 @@ async function main(): Promise<void> {
 
     const restaurants = [];
     const categories = [];
-    const foods = [];
+    const foods: any = [];
 
     for (const restaurantSeed of restaurantSeeds) {
         const restaurant = await prisma.restaurant.create({
@@ -436,11 +446,11 @@ async function main(): Promise<void> {
     }
 
     const foodsByRestaurant = restaurants.reduce<Record<string, typeof foods>>((acc, restaurant) => {
-        acc[restaurant.id] = foods.filter(food => food.restaurantId === restaurant.id);
+        acc[restaurant.id] = foods.filter((food:any) => food.restaurantId === restaurant.id);
         return acc;
     }, {});
 
-    const orderStatuses: OrderStatus[] = [
+    const orderStatuses:OrderStatus[] = [
         'DELIVERED',
         'DELIVERED',
         'DELIVERED',
@@ -450,7 +460,7 @@ async function main(): Promise<void> {
         'PENDING',
         'CANCELLED',
     ];
-    const paymentMethods: PaymentMethod[] = ['ONLINE', 'CASH', 'CARD', 'WALLET'];
+    const paymentMethods:PaymentMethod[] = ['ONLINE', 'CASH', 'CARD', 'WALLET'];
 
     for (let index = 0; index < 20; index += 1) {
         const customer = customers[index]!;
@@ -515,16 +525,16 @@ async function main(): Promise<void> {
                             changedById: customer.id,
                             createdAt: placedAt,
                         },
-                        ...(status !== 'PENDING'
+                        ...(status !== OrderStatus.PENDING
                             ? [
-                                  {
-                                      previousStatus: 'PENDING' as OrderStatus,
-                                      currentStatus: status,
-                                      note: `Order moved to ${status}`,
-                                      changedById: admin.id,
-                                      createdAt: new Date(placedAt.getTime() + 10 * 60 * 1000),
-                                  },
-                              ]
+                                {
+                                    previousStatus: OrderStatus.PENDING,
+                                    currentStatus: status,
+                                    note: `Order moved to ${status}`,
+                                    changedById: admin.id,
+                                    createdAt: new Date(placedAt.getTime() + 10 * 60 * 1000),
+                                },
+                            ]
                             : []),
                     ],
                 },

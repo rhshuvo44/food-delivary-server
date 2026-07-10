@@ -8,47 +8,46 @@ import { orderRoutes } from '../modules/order/order.routes';
 import restaurantRoutes from '../modules/restaurant/restaurant.routes';
 import { reviewRoutes } from '../modules/review/review.routes';
 
-
-const router = Router()
+const router = Router();
 const moduleRoutes = [
-    // {
-    //     path: '/user',
-    //     route: userRouter,
-    // },
-    {
-        path: '/auth',
-        route: AuthRoutes,
-    },
-    {
-        path: '/banners',
-        route: bannerRoutes,
-    },
-    {
-        path: '/restaurants',
-        route: restaurantRoutes,
-    },
-    {
-        path: '/categories',
-        route: categoryRoutes,
-    },
-    {
-        path: '/foods',
-        route: foodRoutes,
-    },
-    {
-        path: '/coupons',
-        route: couponRoutes,
-    },
-    {
-        path: '/order',
-        route: orderRoutes,
-    },
-    {
-        path: '/reviews',
-        route: reviewRoutes,
-    }
-]
+  // {
+  //     path: '/user',
+  //     route: userRouter,
+  // },
+  {
+    path: '/auth',
+    route: AuthRoutes,
+  },
+  {
+    path: '/banners',
+    route: bannerRoutes,
+  },
+  {
+    path: '/restaurants',
+    route: restaurantRoutes,
+  },
+  {
+    path: '/categories',
+    route: categoryRoutes,
+  },
+  {
+    path: '/foods',
+    route: foodRoutes,
+  },
+  {
+    path: '/coupons',
+    route: couponRoutes,
+  },
+  {
+    path: '/order',
+    route: orderRoutes,
+  },
+  {
+    path: '/reviews',
+    route: reviewRoutes,
+  },
+];
 
-moduleRoutes.forEach(route => router.use(route.path, route.route))
+moduleRoutes.forEach((route) => router.use(route.path, route.route));
 
-export default router
+export default router;

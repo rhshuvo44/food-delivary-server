@@ -17,10 +17,22 @@ app.use(cookieParser());
 app.use(corsOptions);
 
 app.get('/health', (_req: Request, res: Response) => {
-    res.status(200).json({ success: true, message: 'Food Order Management System Server is running', data: { status: 'healthy' }, statusCode: 200 });
+  res.status(200).json({
+    success: true,
+    message: 'Food Order Management System Server is running',
+    data: { status: 'healthy' },
+    statusCode: 200,
+  });
+});
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'Food Order Management System Server is running',
+    data: { status: 'healthy' },
+    statusCode: 200,
+  });
 });
 
 app.use('/api/v1', router);
 app.use(notFoundHandler);
 app.use(errorHandler);
-
