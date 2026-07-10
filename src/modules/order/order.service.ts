@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
+import { OrderStatus, PaymentMethod } from '../../generated/prisma';
 import { Prisma } from '../../generated/prisma/client';
-import { OrderStatus, PaymentMethod } from '../../generated/prisma/enums';
+// import { OrderStatus, PaymentMethod } from '../../generated/prisma/enums';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../../utils/errors';
 
 type AuthUser = { id: string; role: string };

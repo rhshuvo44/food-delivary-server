@@ -1,6 +1,7 @@
 import { config } from '../../config/environment';
 import prisma from '../../config/prisma';
-import { UserRole } from '../../generated/prisma/enums';
+import { UserRole } from '../../generated/prisma';
+// import { UserRole } from '../../generated/prisma/enums';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../utils/errors';
 
 import bcrypt from 'bcryptjs';

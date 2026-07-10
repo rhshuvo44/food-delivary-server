@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
-import { CouponType } from '../../generated/prisma/enums';
+import { CouponType } from '../../generated/prisma';
+// import { CouponType } from '../../generated/prisma/enums';
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../../utils/errors';
 
 type AuthUser = { id: string; role: string };
