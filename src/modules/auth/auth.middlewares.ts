@@ -14,8 +14,8 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export type AuthenticatedValidatedRequest<TSchema extends z.ZodTypeAny> = ValidatedRequest<TSchema> &
-  Pick<AuthenticatedRequest, 'user'>;
+export type AuthenticatedValidatedRequest<TSchema extends z.ZodTypeAny> =
+  ValidatedRequest<TSchema> & Pick<AuthenticatedRequest, 'user'>;
 
 export const authenticate = (
   req: AuthenticatedRequest,

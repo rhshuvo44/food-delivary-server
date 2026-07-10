@@ -3,7 +3,8 @@ import { z } from 'zod';
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 export const authValidators = {
-  registerSchema: z.object({ body: z.object({
+  registerSchema: z.object({
+    body: z.object({
       firstName: z.string().min(2),
       lastName: z.string().optional(),
       email: z.string().email(),
@@ -17,18 +18,21 @@ export const authValidators = {
     }),
   }),
 
-  loginSchema: z.object({ body: z.object({
+  loginSchema: z.object({
+    body: z.object({
       email: z.string().email(),
       password: z.string().min(8),
     }),
   }),
 
-  forgotPasswordSchema: z.object({ body: z.object({
+  forgotPasswordSchema: z.object({
+    body: z.object({
       email: z.string().email(),
     }),
   }),
 
-  resetPasswordSchema: z.object({ body: z.object({
+  resetPasswordSchema: z.object({
+    body: z.object({
       token: z.string().min(1),
       password: z
         .string()

@@ -2,8 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { ValidationError } from '../utils/errors';
 
-type ValidatedPart<TSchema extends z.ZodTypeAny, TKey extends 'body' | 'params' | 'query'> =
-  z.infer<TSchema> extends Record<TKey, infer TValue> ? TValue : undefined;
+type ValidatedPart<
+  TSchema extends z.ZodTypeAny,
+  TKey extends 'body' | 'params' | 'query',
+> = z.infer<TSchema> extends Record<TKey, infer TValue> ? TValue : undefined;
 
 export type ValidatedRequest<TSchema extends z.ZodTypeAny> = Omit<
   Request,
@@ -15,7 +17,8 @@ export type ValidatedRequest<TSchema extends z.ZodTypeAny> = Omit<
 };
 
 export const validateRequest =
-  (schema: z.ZodTypeAny) => (req: Request, _res: Response, next: NextFunction): void => {
+  (schema: z.ZodTypeAny) =>
+  (req: Request, _res: Response, next: NextFunction): void => {
     void schema
       .safeParseAsync({
         body: req.body as unknown,

@@ -4,9 +4,15 @@ import { AuthenticatedValidatedRequest } from '../auth/auth.middlewares';
 import { BannerService } from './banner.service';
 import { bannerValidators } from './banner.validators';
 
-type CreateBannerRequest = AuthenticatedValidatedRequest<typeof bannerValidators.createBannerSchema>;
-type UpdateBannerRequest = AuthenticatedValidatedRequest<typeof bannerValidators.updateBannerSchema>;
-type DeleteBannerRequest = AuthenticatedValidatedRequest<typeof bannerValidators.deleteBannerSchema>;
+type CreateBannerRequest = AuthenticatedValidatedRequest<
+  typeof bannerValidators.createBannerSchema
+>;
+type UpdateBannerRequest = AuthenticatedValidatedRequest<
+  typeof bannerValidators.updateBannerSchema
+>;
+type DeleteBannerRequest = AuthenticatedValidatedRequest<
+  typeof bannerValidators.deleteBannerSchema
+>;
 
 export class BannerController {
   static createBanner = async (

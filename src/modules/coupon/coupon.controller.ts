@@ -4,9 +4,15 @@ import { NextFunction, Response } from 'express';
 import { CouponService } from './coupon.service';
 import { couponValidators } from './coupon.validators';
 
-type CreateCouponRequest = AuthenticatedValidatedRequest<typeof couponValidators.createCouponSchema>;
-type UpdateCouponRequest = AuthenticatedValidatedRequest<typeof couponValidators.updateCouponSchema>;
-type DeleteCouponRequest = AuthenticatedValidatedRequest<typeof couponValidators.deleteCouponSchema>;
+type CreateCouponRequest = AuthenticatedValidatedRequest<
+  typeof couponValidators.createCouponSchema
+>;
+type UpdateCouponRequest = AuthenticatedValidatedRequest<
+  typeof couponValidators.updateCouponSchema
+>;
+type DeleteCouponRequest = AuthenticatedValidatedRequest<
+  typeof couponValidators.deleteCouponSchema
+>;
 type ApplyCouponRequest = AuthenticatedValidatedRequest<typeof couponValidators.applyCouponSchema>;
 
 export class CouponController {

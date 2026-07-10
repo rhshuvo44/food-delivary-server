@@ -21,7 +21,11 @@ const getRefreshToken = (req: Request): string | undefined => {
 };
 
 export class AuthController {
-  static register = async (req: RegisterRequest, res: Response, next: NextFunction): Promise<void> => {
+  static register = async (
+    req: RegisterRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const user = await AuthService.register(req.body);
       res.status(201).json(successResponse(user, 'User registered successfully', 201));
@@ -96,11 +100,7 @@ export class AuthController {
     }
   };
 
-  static getProfile = (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): void => {
+  static getProfile = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new Error('Authenticated user missing');

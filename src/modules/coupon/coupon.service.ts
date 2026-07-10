@@ -223,7 +223,9 @@ export class CouponService {
     }
 
     if (payload.orderAmount < Number(coupon.minOrderValue)) {
-      throw new BadRequestError(`Minimum order value for this coupon is ${String(coupon.minOrderValue)}`);
+      throw new BadRequestError(
+        `Minimum order value for this coupon is ${String(coupon.minOrderValue)}`
+      );
     }
 
     const discountAmount = this.calculateDiscount(

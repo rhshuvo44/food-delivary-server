@@ -51,7 +51,11 @@ export class FoodController {
     }
   };
 
-  static getFoods = async (req: GetFoodsRequest, res: Response, next: NextFunction): Promise<void> => {
+  static getFoods = async (
+    req: GetFoodsRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const {
         page,

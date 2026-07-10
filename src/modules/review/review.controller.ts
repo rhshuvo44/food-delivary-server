@@ -4,9 +4,15 @@ import { NextFunction, Response } from 'express';
 import { ReviewService } from './review.service';
 import { reviewValidators } from './review.validators';
 
-type CreateReviewRequest = AuthenticatedValidatedRequest<typeof reviewValidators.createReviewSchema>;
-type UpdateReviewRequest = AuthenticatedValidatedRequest<typeof reviewValidators.updateReviewSchema>;
-type DeleteReviewRequest = AuthenticatedValidatedRequest<typeof reviewValidators.deleteReviewSchema>;
+type CreateReviewRequest = AuthenticatedValidatedRequest<
+  typeof reviewValidators.createReviewSchema
+>;
+type UpdateReviewRequest = AuthenticatedValidatedRequest<
+  typeof reviewValidators.updateReviewSchema
+>;
+type DeleteReviewRequest = AuthenticatedValidatedRequest<
+  typeof reviewValidators.deleteReviewSchema
+>;
 
 export class ReviewController {
   static createReview = async (

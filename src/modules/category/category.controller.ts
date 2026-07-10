@@ -4,9 +4,15 @@ import { NextFunction, Response } from 'express';
 import { CategoryService } from './category.service';
 import { categoryValidators } from './category.validators';
 
-type CreateCategoryRequest = AuthenticatedValidatedRequest<typeof categoryValidators.createCategorySchema>;
-type UpdateCategoryRequest = AuthenticatedValidatedRequest<typeof categoryValidators.updateCategorySchema>;
-type DeleteCategoryRequest = AuthenticatedValidatedRequest<typeof categoryValidators.deleteCategorySchema>;
+type CreateCategoryRequest = AuthenticatedValidatedRequest<
+  typeof categoryValidators.createCategorySchema
+>;
+type UpdateCategoryRequest = AuthenticatedValidatedRequest<
+  typeof categoryValidators.updateCategorySchema
+>;
+type DeleteCategoryRequest = AuthenticatedValidatedRequest<
+  typeof categoryValidators.deleteCategorySchema
+>;
 type GetCategoriesRequest = import('../../middlewares/requestValidator').ValidatedRequest<
   typeof categoryValidators.getCategoriesSchema
 >;
